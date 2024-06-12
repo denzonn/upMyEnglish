@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Materi;
 use App\Models\SubMateri;
+use App\Models\SubMateriImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Yajra\DataTables\DataTables;
@@ -43,17 +44,29 @@ class SubMateriController extends Controller
     {
         $data = $request->all();
 
+        if ($request->hasFile('audio')) {
+            $images = $request->file('audio');
+            $audioExtension  = $images->getClientOriginalExtension();
+            $audioFileName  = uniqid() . "." . $audioExtension;
+            $data['audio'] = $images->storeAs('sub_materi_audio', $audioFileName, 'public');
+        }
+
+        $subMateri = SubMateri::create($data);
+
         if ($request->hasFile('photo')) {
             $images = $request->file('photo');
 
-            $extension = $images->getClientOriginalExtension();
+            foreach ($images as $image) {
+                $extension = $image->getClientOriginalExtension();
+                $file_name = uniqid() . "." . $extension;
+                $path = $image->storeAs('submateri', $file_name, 'public');
 
-            $file_name = $data['name'] . "-" . uniqid() . "." . $extension;
-
-            $data['photo'] = $images->storeAs('submateri', $file_name, 'public');
+                SubMateriImage::create([
+                    'sub_materi_id' => $subMateri->id,
+                    'photo' => $path,
+                ]);
+            }
         }
-
-        SubMateri::create($data);
 
         return redirect()->route('submateri.index')->with('toast_success', 'Sub Materi berhasil ditambahkan');
     }
@@ -73,8 +86,9 @@ class SubMateriController extends Controller
     {
         $data = SubMateri::findOrFail($id);
         $materi = Materi::all();
+        $photos = SubMateriImage::where('sub_materi_id', $data->id)->get();
 
-        return view('pages.submateri.edit', compact('data','materi'));
+        return view('pages.submateri.edit', compact('data', 'materi', 'photos'));
     }
 
     /**
@@ -86,17 +100,38 @@ class SubMateriController extends Controller
         $submateri = SubMateri::findOrFail($id);
 
         if ($request->hasFile('photo')) {
-            if($submateri->photo){
-                Storage::disk('public')->delete($submateri->photo);
+            $photo = SubMateriImage::where('sub_materi_id', $submateri->id)->get();
+
+            foreach ($photo as $p) {
+                Storage::disk('public')->delete($p->photo);
+
+                $p->delete();
             }
 
             $images = $request->file('photo');
 
-            $extension = $images->getClientOriginalExtension();
+            foreach ($images as $image) {
+                $extension = $image->getClientOriginalExtension();
+                $file_name = uniqid() . "." . $extension;
+                $path = $image->storeAs('submateri', $file_name, 'public');
 
-            $file_name = $data['name'] . "-" . uniqid() . "." . $extension;
+                SubMateriImage::create([
+                    'sub_materi_id' => $id,
+                    'photo' => $path,
+                ]);
+            }
+        }
 
-            $data['photo'] = $images->storeAs('submateri', $file_name, 'public');
+        if ($request->hasFile('audio')) {
+
+            if ($submateri->audio) {
+                Storage::disk('public')->delete($submateri->audio);
+            }
+
+            $images = $request->file('audio');
+            $audioExtension  = $images->getClientOriginalExtension();
+            $audioFileName  = uniqid() . "." . $audioExtension;
+            $data['audio'] = $images->storeAs('sub_materi_audio', $audioFileName, 'public');
         }
 
         $submateri->update($data);
@@ -112,8 +147,14 @@ class SubMateriController extends Controller
         $submateri = SubMateri::findOrFail($id);
         $name = $submateri->name;
 
-        if ($submateri->photo) {
-            Storage::disk('public')->delete($submateri->photo);
+        $photos = SubMateriImage::where('sub_materi_id', $id)->get();
+
+        if ($photos) {
+            foreach ($photos as $p) {
+                Storage::disk('public')->delete($p->photo);
+
+                $p->delete();
+            }
         }
 
         $submateri->delete();

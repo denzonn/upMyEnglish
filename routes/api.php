@@ -22,6 +22,7 @@ Route::post('register', [AuthController::class, 'register']);
 Route::middleware(['auth:api'])->group(function() {
     Route::get('materi', [GetDataController::class, 'materi']);
     Route::get('submateri/{materi_id}', [GetDataController::class, 'submateri']);
+    Route::get('submateri/detail/{sub_materi_id}', [GetDataController::class, 'submateriDetail']);
     Route::get('question/{submateri_id}', [GetDataController::class, 'question']);
     Route::get('answer/{question_id}', [GetDataController::class, 'answer']);
     Route::get('user_answer', [UserAnswerController::class, 'index']);

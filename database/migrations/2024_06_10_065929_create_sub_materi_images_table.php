@@ -11,12 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('sub_materis', function (Blueprint $table) {
+        Schema::create('sub_materi_images', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('materi_id')->constrained('materis')->onDelete('cascade');
-            $table->string('name');
-            $table->longText('description');
-            $table->string('audio')->nullable();
+            $table->foreignId('sub_materi_id')->constrained('sub_materis')->onDelete('cascade');
+            $table->string('photo');
             $table->timestamps();
         });
     }
@@ -26,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('sub_materis');
+        Schema::dropIfExists('sub_materi_images');
     }
 };

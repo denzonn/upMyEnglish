@@ -17,18 +17,16 @@
     <title>
         @yield('title')
     </title>
-
-    @vite('resources/css/app.css')
 </head>
 
-<body class="bg-primary">
-    <div class="fixed top-0 left-10 w-[20vw] h-screen pt-10 pb-16">
-        <div class="bg-white w-full h-full rounded-lg px-8 py-6">
-            @include('includes.sidebar')
+<body class="bg-secondary">
+    <div class="fixed top-0 left-0 w-full h-16">
+        <div class="bg-white w-full h-full rounded-b-lg pt-3 px-24">
+            @include('includes.navbar')
         </div>
     </div>
 
-    <div class="relative top-0 left-[25vw] py-10 min-h-screen w-[72vw]">
+    <div class="relative top-24 left-0 px-24 w-full">
         @yield('content')
     </div>
 

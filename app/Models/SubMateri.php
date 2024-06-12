@@ -12,8 +12,8 @@ class SubMateri extends Model
     protected $fillable = [
         'name',
         'materi_id',
-        'photo',
         'description',
+        'audio',
     ];
 
     public function materi()
@@ -24,5 +24,10 @@ class SubMateri extends Model
     public function userAnswers()
     {
         return $this->hasMany(UserAnswer::class);
+    }
+
+    public function images()
+    {
+        return $this->hasMany(SubMateriImage::class);
     }
 }
