@@ -99,15 +99,30 @@ class SubMateriController extends Controller
         $data = $request->all();
         $submateri = SubMateri::findOrFail($id);
 
-        if ($request->hasFile('photo')) {
-            $photo = SubMateriImage::where('sub_materi_id', $submateri->id)->get();
+        $photo = SubMateriImage::where('sub_materi_id', $submateri->id)->get();
+        $existingPhotoPaths = $photo->pluck('photo')->toArray();
 
-            foreach ($photo as $p) {
-                Storage::disk('public')->delete($p->photo);
+        if($request->input('existing_photos') == null){
+            foreach ($photo as $photoPath) {
+                SubMateriImage::findOrFail($photoPath->id)->delete();
 
-                $p->delete();
+                Storage::disk('public')->delete($photoPath->photo);
             }
+        } else {
+            if ($request['existing_photos']) {
+                $photosToDelete = array_diff($existingPhotoPaths, $request['existing_photos']);
 
+                if ($photosToDelete) {
+                    foreach ($photosToDelete as $photoPath) {
+                        SubMateriImage::where('photo', $photoPath)->delete();
+
+                        Storage::disk('public')->delete($photoPath);
+                    }
+                }
+            }
+        }
+
+        if ($request->hasFile('photo')) {
             $images = $request->file('photo');
 
             foreach ($images as $image) {

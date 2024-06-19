@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
-});
+})->middleware('redirectIfAuth');
 
 Route::prefix('admin')->middleware(['auth', 'isAdmin'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -51,4 +51,4 @@ Route::prefix('admin')->middleware(['auth', 'isAdmin'])->group(function () {
     Route::get('get-user', [UserAnswerController::class, 'getData'])->name('userAnswerData');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

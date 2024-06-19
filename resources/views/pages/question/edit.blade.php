@@ -62,10 +62,18 @@
                     </div>
                     <div class="mt-6 flex flex-col gap-2">
                         <label>Pratinjau Foto</label>
-                        <img id="photo-preview" class="w-1/3 border-none"
-                            src="{{ $data->photo ? asset('storage/' . $data->photo) : '' }}">
-                        <span id="no-photo-text" class="{{ $data->photo ? 'hidden' : 'text-red-500' }}">Belum ada foto</span>
+                        <div class="relative flex w-1/3">
+                            @if ($data->photo !== null)
+                                <img id="photo-preview" class="border-none" src="{{ asset('storage/' . $data->photo) }}">
+                                <button id="delete-button" type="button" onclick="deleteExistingPhoto()"
+                                    class="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 bg-red-500 text-white rounded-full flex justify-center items-center w-6 h-6">x</button>
+                            @endif
+                            <input type="hidden" name="existing_photos[]" value="{{ $data->photo }}">
+                        </div>
+                        <span id="no-photo-text" class="{{ $data->photo ? 'hidden' : 'text-red-500' }}">Belum ada
+                            foto</span>
                     </div>
+
                 </div>
                 <div class="mt-6 flex flex-col gap-2 justify-end">
                     <button type="submit" class="rounded-md bg-primary text-white py-2 text-lg">Update Pertanyaan</button>
@@ -93,6 +101,18 @@
             reader.readAsDataURL(event.target.files[0]);
         }
 
+        function deleteExistingPhoto() {
+            const photoPreview = document.getElementById('photo-preview');
+            const deleteButton = document.getElementById('delete-button');
+            const noPhotoText = document.getElementById('no-photo-text');
+            const existingPhotoInput = document.querySelector('input[name="existing_photos[]"]');
+
+            photoPreview.src = '';
+            noPhotoText.classList.remove('hidden');
+            deleteButton.classList.add('hidden');
+            existingPhotoInput.parentNode.removeChild(existingPhotoInput);
+        }
+
         function previewAudio(event) {
             const audio = document.getElementById('audio-preview');
             const file = event.target.files[0];
@@ -105,5 +125,14 @@
                 audio.classList.add('hidden');
             }
         }
+
+        document.querySelector('form').addEventListener('submit', function(event) {
+            // Buat input hidden untuk menyimpan ID foto yang akan dihapus
+            const deletedPhotosInput = document.createElement('input');
+            deletedPhotosInput.type = 'hidden';
+            deletedPhotosInput.name = 'deleted_photos';
+            deletedPhotosInput.value = JSON.stringify(deletedPhotoIds); // Ubah ke JSON jika diperlukan
+            this.appendChild(deletedPhotosInput);
+        });
     </script>
 @endpush

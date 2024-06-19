@@ -89,6 +89,12 @@ class QuestionController extends Controller
         $data = $request->all();
         $question = Question::findOrFail($id);
 
+        if (!$request['existing_photos']) {
+            Storage::disk('public')->delete($question->photo);
+            $question->photo = null;
+            $question->save();
+        }
+
         if ($request->hasFile('photo')) {
             if ($question->photo) {
                 Storage::disk('public')->delete($question->photo);
