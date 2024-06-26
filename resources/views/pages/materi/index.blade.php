@@ -6,9 +6,9 @@
 
 @section('content')
     <div class="bg-white p-8 rounded-md text-gray-500">
-        <a href="{{ route('materi.create') }}" class="px-6 py-3 bg-primary rounded-md text-white">
+        {{--  <a href="{{ route('materi.create') }}" class="px-6 py-3 bg-primary rounded-md text-white">
             Tambah Materi
-        </a>
+        </a>  --}}
         <div class="pt-4">
             <table id="materiTable" class="w-full">
                 <thead class="text-left">

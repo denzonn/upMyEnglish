@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Example;
+use App\Models\ExampleImage;
 use App\Models\Materi;
 use App\Models\SubMateri;
 use App\Models\SubMateriImage;
@@ -68,6 +70,13 @@ class SubMateriController extends Controller
             }
         }
 
+        Example::create([
+            'sub_materi_id' => $subMateri->id,
+            'name' => null,
+            'audio' => null,
+            'description' => null,
+        ]);
+
         return redirect()->route('submateri.index')->with('toast_success', 'Sub Materi berhasil ditambahkan');
     }
 
@@ -102,7 +111,7 @@ class SubMateriController extends Controller
         $photo = SubMateriImage::where('sub_materi_id', $submateri->id)->get();
         $existingPhotoPaths = $photo->pluck('photo')->toArray();
 
-        if($request->input('existing_photos') == null){
+        if ($request->input('existing_photos') == null) {
             foreach ($photo as $photoPath) {
                 SubMateriImage::findOrFail($photoPath->id)->delete();
 
@@ -149,7 +158,14 @@ class SubMateriController extends Controller
             $data['audio'] = $images->storeAs('sub_materi_audio', $audioFileName, 'public');
         }
 
-        $submateri->update($data);
+        if ($request['deleted_audio']) {
+            Storage::disk('public')->delete($submateri->audio);
+
+            $submateri['audio'] = null;
+            $submateri->update($data);
+        } else {
+            $submateri->update($data);
+        }
 
         return redirect()->route('submateri.index')->with('toast_success', 'Sub Materi berhasil Diupdate');
     }
@@ -175,5 +191,87 @@ class SubMateriController extends Controller
         $submateri->delete();
 
         return redirect()->route('submateri.index')->with('toast_success', "Sub Materi $name berhasil dihapus");
+    }
+
+    public function example($sub_materi_id)
+    {
+        $data = Example::firstOrCreate(['sub_materi_id' => $sub_materi_id], [
+            'name' => null,
+            'description' => null,
+            'audio' => null
+        ]);
+
+        $photos = ExampleImage::where('example_id', $data->id)->get();
+
+        return view('pages.submateri.example.edit', compact('data', 'photos'));
+    }
+
+
+    public function updateExample(Request $request, $id)
+    {
+        $data = $request->all();
+
+        $example = Example::findOrFail($id);
+
+        $photo = ExampleImage::where('example_id', $example->id)->get();
+        $existingPhotoPaths = $photo->pluck('photo')->toArray();
+
+        if ($request->input('existing_photos') == null) {
+            foreach ($photo as $photoPath) {
+                ExampleImage::findOrFail($photoPath->id)->delete();
+
+                Storage::disk('public')->delete($photoPath->photo);
+            }
+        } else {
+            if ($request['existing_photos']) {
+                $photosToDelete = array_diff($existingPhotoPaths, $request['existing_photos']);
+
+                if ($photosToDelete) {
+                    foreach ($photosToDelete as $photoPath) {
+                        ExampleImage::where('photo', $photoPath)->delete();
+
+                        Storage::disk('public')->delete($photoPath);
+                    }
+                }
+            }
+        }
+
+        if ($request->hasFile('photo')) {
+            $images = $request->file('photo');
+
+            foreach ($images as $image) {
+                $extension = $image->getClientOriginalExtension();
+                $file_name = uniqid() . "." . $extension;
+                $path = $image->storeAs('example', $file_name, 'public');
+
+                ExampleImage::create([
+                    'example_id' => $id,
+                    'photo' => $path,
+                ]);
+            }
+        }
+
+        if ($request->hasFile('audio')) {
+
+            if ($example->audio) {
+                Storage::disk('public')->delete($example->audio);
+            }
+
+            $images = $request->file('audio');
+            $audioExtension  = $images->getClientOriginalExtension();
+            $audioFileName  = uniqid() . "." . $audioExtension;
+            $data['audio'] = $images->storeAs('example-audio', $audioFileName, 'public');
+        }
+
+        if ($request['deleted_audio']) {
+            Storage::disk('public')->delete($example->audio);
+
+            $example['audio'] = null;
+            $example->update($data);
+        } else {
+            $example->update($data);
+        }
+
+        return redirect()->route('submateri.index')->with('toast_success', 'Example berhasil Diupdate');
     }
 }

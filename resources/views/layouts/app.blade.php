@@ -20,7 +20,7 @@
 </head>
 
 <body class="bg-secondary">
-    <div class="fixed top-0 left-0 w-full h-16">
+    <div class="fixed top-0 left-0 w-full h-16 z-50">
         <div class="bg-white w-full h-full rounded-b-lg pt-3 px-24">
             @include('includes.navbar')
         </div>

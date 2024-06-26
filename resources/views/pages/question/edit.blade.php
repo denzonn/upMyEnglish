@@ -44,13 +44,18 @@
                     <div class="mt-6 flex flex-col gap-2">
                         <label for="audio">Audio</label>
                         <input type="file" name="audio" class="w-full border px-4 py-[6px] rounded-md bg-transparent"
-                            accept="audio/mpeg" onchange="previewAudio(event)">
+                            accept="audio/mpeg, video/mp4" onchange="previewAudio(event)">
                     </div>
                     <div class="mt-6 flex flex-col gap-2">
                         <label>Pratinjau Audio</label>
-                        <audio id="audio-preview" controls class="{{ $data->audio ? '' : 'hidden' }} p-0">
-                            <source src="{{ $data->audio ? asset('storage/' . $data->audio) : '' }}" type="audio/mpeg">
-                        </audio>
+                        <div class="relative w-fit">
+                            <audio id="audio-preview" controls class="{{ $data->audio ? '' : 'hidden' }} p-0">
+                                <source src="{{ $data->audio ? asset('storage/' . $data->audio) : '' }}" type="audio/mpeg">
+                            </audio>
+                            <button type="button" id="delete-audio-button"
+                                class="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 bg-red-500 text-white rounded-full flex justify-center items-center w-6 h-6 {{ $data->audio ? '' : 'hidden' }}"
+                                onclick="deleteAudio()">x</button>
+                        </div>
                         <span id="no-audio" class="{{ $data->audio ? 'hidden' : 'text-red-500' }}">Belum ada Audio</span>
                     </div>
                 </div>
@@ -73,8 +78,8 @@
                         <span id="no-photo-text" class="{{ $data->photo ? 'hidden' : 'text-red-500' }}">Belum ada
                             foto</span>
                     </div>
-
                 </div>
+                <input type="hidden" name="deleted_audio" id="deleted-audio">
                 <div class="mt-6 flex flex-col gap-2 justify-end">
                     <button type="submit" class="rounded-md bg-primary text-white py-2 text-lg">Update Pertanyaan</button>
                 </div>
@@ -121,9 +126,21 @@
                 audio.src = url;
                 audio.classList.remove('hidden');
                 document.getElementById('no-audio').style.display = 'none';
+                document.getElementById('delete-audio-button').classList.remove('hidden');
             } else {
                 audio.classList.add('hidden');
+                document.getElementById('delete-audio-button').classList.add('hidden');
             }
+        }
+
+        function deleteAudio() {
+            const audio = document.getElementById('audio-preview');
+            const deleteButton = document.getElementById('delete-audio-button');
+            audio.src = '';
+            audio.classList.add('hidden');
+            deleteButton.classList.add('hidden');
+            document.getElementById('no-audio').style.display = 'block';
+            document.getElementById('deleted-audio').value = 'true';
         }
 
         document.querySelector('form').addEventListener('submit', function(event) {

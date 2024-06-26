@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title')
-    Edit SubMateri
+    Edit Example
 @endsection
 
 @section('content')
@@ -10,28 +10,16 @@
             <a href="{{ route('submateri.index') }}"
                 class="bg-primary py-1 px-2 rounded-lg text-white hover:bg-secondary transition-all"><i
                     class="fa-solid fa-arrow-left-long"></i></a>
-            <div class="text-xl font-semibold">Edit SubMateri</div>
+            <div class="text-xl font-semibold">Edit Example</div>
         </div>
         <div>
-            <form action="{{ route('submateri.update', $data->id) }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('example-update', $data->id) }}" method="POST" enctype="multipart/form-data">
                 @method('PUT')
                 @csrf
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="mt-6 flex flex-col gap-2">
-                        <label for="">Nama Sub Materi</label>
-                        <input type="text" placeholder="Masukkan Nama Materi" name="name"
-                            class="w-full border px-4 py-2 rounded-md bg-transparent" value="{{ $data->name }}"
-                            required />
-                    </div>
-                    <div class="mt-6 flex flex-col gap-2">
-                        <label for="">Materi</label>
-                        <select name="materi_id" id="" class="bg-transparent border px-4 py-[8px] rounded-md">
-                            @foreach ($materi as $item)
-                                <option value="{{ $item->id }}" {{ $item->id === $data->materi_id ? 'selected' : '' }}>
-                                    {{ $item->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
+                <div class="mt-6 flex flex-col gap-2">
+                    <label for="">Nama Example</label>
+                    <input type="text" placeholder="Masukkan Nama Example" name="name"
+                        class="w-full border px-4 py-2 rounded-md bg-transparent" value="{{ $data->name ?? "" }}" required />
                 </div>
                 <div class="mt-6 flex flex-col gap-2">
                     <label for="">Deskripsi</label>
@@ -41,7 +29,7 @@
                     <div class="mt-6 flex flex-col gap-2">
                         <label for="audio">Audio</label>
                         <input type="file" name="audio" class="w-full border px-4 py-[6px] rounded-md bg-transparent"
-                        accept="audio/mpeg, video/mp4"  onchange="previewAudio(event)">
+                            accept="audio/mpeg, video/mp4" onchange="previewAudio(event)">
                     </div>
                     <div class="mt-6 flex flex-col gap-2">
                         <label>Pratinjau Audio</label>

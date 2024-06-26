@@ -58,8 +58,10 @@
                         render: function(data) {
                             let editUrl = '{{ route('submateri.edit', ':id') }}';
                             let deleteUrl = '{{ route('submateri.destroy', ':id') }}';
+                            let exampleUrl = '{{ route('example-edit', ':id') }}';
                             editUrl = editUrl.replace(':id', data);
                             deleteUrl = deleteUrl.replace(':id', data);
+                            exampleUrl = exampleUrl.replace(':id', data);
                             return '<div class="flex">' +
                                 '<a href="' + editUrl +
                                 '" class="bg-yellow-500 px-3 text-sm py-1 rounded-md text-white mr-2" data-id="' +
@@ -68,8 +70,11 @@
                                 '" method="POST" class="d-inline delete-form">' +
                                 '@csrf' +
                                 '@method('DELETE')' +
-                                '<button class="bg-red-500 text-white px-3 text-sm py-1 rounded-md delete-button" type="button">Delete</button>' +
+                                '<button class="bg-red-500 text-white px-3 text-sm py-1 rounded-md delete-button mr-2" type="button">Delete</button>' +
                                 '</form>' +
+                                '<a href="' + exampleUrl +
+                                '" class="bg-primary px-3 text-sm py-1 rounded-md text-white" data-id="' +
+                                data + '">Example</a>' +
                                 '</div>';
                         }
                     },

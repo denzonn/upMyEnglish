@@ -30,6 +30,9 @@ Route::prefix('admin')->middleware(['auth', 'isAdmin'])->group(function () {
     Route::resource('submateri', SubMateriController::class);
     Route::resource('question', QuestionController::class);
 
+    Route::get('example/{id}', [SubMateriController::class, 'example'])->name('example-edit');
+    Route::put('example/update/{id}', [SubMateriController::class, 'updateExample'])->name('example-update');
+
     //Answer
     Route::get('answer/{question_id}', [AnswerController::class, 'index'])->name('answer-index');
     Route::get('answer/create/{question_id}', [AnswerController::class, 'create'])->name('answer-create');

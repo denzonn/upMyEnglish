@@ -54,7 +54,7 @@ class QuestionController extends Controller
             $images = $request->file('audio');
             $audioExtension  = $images->getClientOriginalExtension();
             $audioFileName  = uniqid() . "." . $audioExtension;
-            $data['audio'] = $images->storeAs('question', $audioFileName, 'public');
+            $data['audio'] = $images->storeAs('question-audio', $audioFileName, 'public');
         }
 
         Question::create($data);
@@ -115,10 +115,17 @@ class QuestionController extends Controller
             $images = $request->file('audio');
             $audioExtension  = $images->getClientOriginalExtension();
             $audioFileName  = uniqid() . "." . $audioExtension;
-            $data['audio'] = $images->storeAs('question', $audioFileName, 'public');
+            $data['audio'] = $images->storeAs('question-audio', $audioFileName, 'public');
         }
 
-        $question->update($data);
+        if($request['deleted_audio']){
+            Storage::disk('public')->delete($question->audio);
+
+            $question->audio = null;
+            $question->update($data);
+        } else {
+            $question->update($data);
+        }
 
         return redirect()->route('question.index')->with('toast_success', 'Pertanyaan berhasil diubah');
     }

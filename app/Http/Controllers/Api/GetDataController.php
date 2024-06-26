@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\Answer;
+use App\Models\Example;
+use App\Models\ExampleImage;
 use App\Models\Materi;
 use App\Models\Question;
 use App\Models\SubMateri;
@@ -49,6 +51,22 @@ class GetDataController extends BaseController
         return $this->sendResponse($allData, 'Success Get SubMateri Detail');
     }
 
+    public function example($sub_materi_id){
+        $data = Example::where('sub_materi_id', $sub_materi_id)->first();
+        $photo = ExampleImage::where('example_id', $data->id)->get();
+
+        if (!$data) {
+            return $this->sendError('Example Not Found');
+        }
+
+        $allData = [
+            'data' => $data,
+            'photos' => $photo,
+        ];
+
+        return $this->sendResponse($allData, 'Success Get Example Detail');
+    }
+
     public function question($submateri_id)
     {
         $data = Question::where('sub_materi_id', $submateri_id)->get();
@@ -62,7 +80,7 @@ class GetDataController extends BaseController
 
     public function answer($question_id)
     {
-        $data = Answer::where('question_id', $question_id)->get();
+        $data = Answer::where('question_id', $question_id)->inRandomOrder()->get();
 
         if ($data->isEmpty()) {
             return $this->sendError('Answer Not Found');
