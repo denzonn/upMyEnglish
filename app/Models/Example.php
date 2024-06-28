@@ -14,6 +14,7 @@ class Example extends Model
         'name',
         'audio',
         'description',
+        'photo',
     ];
 
     public function subMateri(){

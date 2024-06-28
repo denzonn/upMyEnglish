@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AnswerController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\ExampleController;
 use App\Http\Controllers\Admin\MateriController;
 use App\Http\Controllers\Admin\QuestionController;
 use App\Http\Controllers\Admin\SubMateriController;
@@ -30,8 +31,12 @@ Route::prefix('admin')->middleware(['auth', 'isAdmin'])->group(function () {
     Route::resource('submateri', SubMateriController::class);
     Route::resource('question', QuestionController::class);
 
-    Route::get('example/{id}', [SubMateriController::class, 'example'])->name('example-edit');
-    Route::put('example/update/{id}', [SubMateriController::class, 'updateExample'])->name('example-update');
+    Route::get('example/{sub_materi_id}', [ExampleController::class, 'index'])->name('example-index');
+    Route::get('example/create/{sub_materi_id}', [ExampleController::class, 'create'])->name('example-create');
+    Route::post('example/create', [ExampleController::class, 'store'])->name('example-store');
+    Route::get('example/edit/{id}', [ExampleController::class, 'edit'])->name('example-edit');
+    Route::put('example/update/{id}', [ExampleController::class, 'update'])->name('example-update');
+    Route::delete('example/destroy/{id}', [ExampleController::class, 'destroy'])->name('example-destroy');
 
     //Answer
     Route::get('answer/{question_id}', [AnswerController::class, 'index'])->name('answer-index');
@@ -49,6 +54,7 @@ Route::prefix('admin')->middleware(['auth', 'isAdmin'])->group(function () {
     Route::get('user-answer/sub_materi/{user_id}/data', [UserAnswerController::class, 'getDataSubMateri'])->name('user-answer.submateri-data');
     Route::get('get-materi', [MateriController::class, 'getData'])->name('materiData');
     Route::get('get-submateri', [SubMateriController::class, 'getData'])->name('submateriData');
+    Route::get('get-example/{sub_materi_id}', [ExampleController::class, 'getData'])->name('exampleData');
     Route::get('get-question', [QuestionController::class, 'getData'])->name('questionData');
     Route::get('get-answer/{question_id}', [AnswerController::class, 'getData'])->name('answerData');
     Route::get('get-user', [UserAnswerController::class, 'getData'])->name('userAnswerData');

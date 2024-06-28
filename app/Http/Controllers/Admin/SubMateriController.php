@@ -70,13 +70,6 @@ class SubMateriController extends Controller
             }
         }
 
-        Example::create([
-            'sub_materi_id' => $subMateri->id,
-            'name' => null,
-            'audio' => null,
-            'description' => null,
-        ]);
-
         return redirect()->route('submateri.index')->with('toast_success', 'Sub Materi berhasil ditambahkan');
     }
 
@@ -193,85 +186,85 @@ class SubMateriController extends Controller
         return redirect()->route('submateri.index')->with('toast_success', "Sub Materi $name berhasil dihapus");
     }
 
-    public function example($sub_materi_id)
-    {
-        $data = Example::firstOrCreate(['sub_materi_id' => $sub_materi_id], [
-            'name' => null,
-            'description' => null,
-            'audio' => null
-        ]);
+    // public function example($sub_materi_id)
+    // {
+    //     $data = Example::firstOrCreate(['sub_materi_id' => $sub_materi_id], [
+    //         'name' => null,
+    //         'description' => null,
+    //         'audio' => null
+    //     ]);
 
-        $photos = ExampleImage::where('example_id', $data->id)->get();
+    //     $photos = ExampleImage::where('example_id', $data->id)->get();
 
-        return view('pages.submateri.example.edit', compact('data', 'photos'));
-    }
+    //     return view('pages.submateri.example.edit', compact('data', 'photos'));
+    // }
 
 
-    public function updateExample(Request $request, $id)
-    {
-        $data = $request->all();
+    // public function updateExample(Request $request, $id)
+    // {
+    //     $data = $request->all();
 
-        $example = Example::findOrFail($id);
+    //     $example = Example::findOrFail($id);
 
-        $photo = ExampleImage::where('example_id', $example->id)->get();
-        $existingPhotoPaths = $photo->pluck('photo')->toArray();
+    //     $photo = ExampleImage::where('example_id', $example->id)->get();
+    //     $existingPhotoPaths = $photo->pluck('photo')->toArray();
 
-        if ($request->input('existing_photos') == null) {
-            foreach ($photo as $photoPath) {
-                ExampleImage::findOrFail($photoPath->id)->delete();
+    //     if ($request->input('existing_photos') == null) {
+    //         foreach ($photo as $photoPath) {
+    //             ExampleImage::findOrFail($photoPath->id)->delete();
 
-                Storage::disk('public')->delete($photoPath->photo);
-            }
-        } else {
-            if ($request['existing_photos']) {
-                $photosToDelete = array_diff($existingPhotoPaths, $request['existing_photos']);
+    //             Storage::disk('public')->delete($photoPath->photo);
+    //         }
+    //     } else {
+    //         if ($request['existing_photos']) {
+    //             $photosToDelete = array_diff($existingPhotoPaths, $request['existing_photos']);
 
-                if ($photosToDelete) {
-                    foreach ($photosToDelete as $photoPath) {
-                        ExampleImage::where('photo', $photoPath)->delete();
+    //             if ($photosToDelete) {
+    //                 foreach ($photosToDelete as $photoPath) {
+    //                     ExampleImage::where('photo', $photoPath)->delete();
 
-                        Storage::disk('public')->delete($photoPath);
-                    }
-                }
-            }
-        }
+    //                     Storage::disk('public')->delete($photoPath);
+    //                 }
+    //             }
+    //         }
+    //     }
 
-        if ($request->hasFile('photo')) {
-            $images = $request->file('photo');
+    //     if ($request->hasFile('photo')) {
+    //         $images = $request->file('photo');
 
-            foreach ($images as $image) {
-                $extension = $image->getClientOriginalExtension();
-                $file_name = uniqid() . "." . $extension;
-                $path = $image->storeAs('example', $file_name, 'public');
+    //         foreach ($images as $image) {
+    //             $extension = $image->getClientOriginalExtension();
+    //             $file_name = uniqid() . "." . $extension;
+    //             $path = $image->storeAs('example', $file_name, 'public');
 
-                ExampleImage::create([
-                    'example_id' => $id,
-                    'photo' => $path,
-                ]);
-            }
-        }
+    //             ExampleImage::create([
+    //                 'example_id' => $id,
+    //                 'photo' => $path,
+    //             ]);
+    //         }
+    //     }
 
-        if ($request->hasFile('audio')) {
+    //     if ($request->hasFile('audio')) {
 
-            if ($example->audio) {
-                Storage::disk('public')->delete($example->audio);
-            }
+    //         if ($example->audio) {
+    //             Storage::disk('public')->delete($example->audio);
+    //         }
 
-            $images = $request->file('audio');
-            $audioExtension  = $images->getClientOriginalExtension();
-            $audioFileName  = uniqid() . "." . $audioExtension;
-            $data['audio'] = $images->storeAs('example-audio', $audioFileName, 'public');
-        }
+    //         $images = $request->file('audio');
+    //         $audioExtension  = $images->getClientOriginalExtension();
+    //         $audioFileName  = uniqid() . "." . $audioExtension;
+    //         $data['audio'] = $images->storeAs('example-audio', $audioFileName, 'public');
+    //     }
 
-        if ($request['deleted_audio']) {
-            Storage::disk('public')->delete($example->audio);
+    //     if ($request['deleted_audio']) {
+    //         Storage::disk('public')->delete($example->audio);
 
-            $example['audio'] = null;
-            $example->update($data);
-        } else {
-            $example->update($data);
-        }
+    //         $example['audio'] = null;
+    //         $example->update($data);
+    //     } else {
+    //         $example->update($data);
+    //     }
 
-        return redirect()->route('submateri.index')->with('toast_success', 'Example berhasil Diupdate');
-    }
+    //     return redirect()->route('submateri.index')->with('toast_success', 'Example berhasil Diupdate');
+    // }
 }

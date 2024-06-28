@@ -44,7 +44,7 @@
                     <div class="mt-6 flex flex-col gap-2">
                         <label for="audio">Audio</label>
                         <input type="file" name="audio" class="w-full border px-4 py-[6px] rounded-md bg-transparent"
-                            accept="audio/mpeg, video/mp4" onchange="previewAudio(event)">
+                        accept="audio/mpeg, audio/wav, video/mp4" onchange="previewAudio(event)">
                     </div>
                     <div class="mt-6 flex flex-col gap-2">
                         <label>Pratinjau Audio</label>

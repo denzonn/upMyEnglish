@@ -7,19 +7,19 @@
 @section('content')
     <div class="bg-white p-8 rounded-md text-gray-500">
         <div class="flex flex-row gap-2 items-center">
-            <a href="{{ route('submateri.index') }}"
+            <a href="{{ route('example-index', $data->sub_materi_id) }}"
                 class="bg-primary py-1 px-2 rounded-lg text-white hover:bg-secondary transition-all"><i
                     class="fa-solid fa-arrow-left-long"></i></a>
             <div class="text-xl font-semibold">Edit Example</div>
         </div>
         <div>
             <form action="{{ route('example-update', $data->id) }}" method="POST" enctype="multipart/form-data">
-                @method('PUT')
                 @csrf
+                @method('PUT')
                 <div class="mt-6 flex flex-col gap-2">
                     <label for="">Nama Example</label>
                     <input type="text" placeholder="Masukkan Nama Example" name="name"
-                        class="w-full border px-4 py-2 rounded-md bg-transparent" value="{{ $data->name ?? "" }}" required />
+                        class="w-full border px-4 py-2 rounded-md bg-transparent" value="{{ $data->name }}" required />
                 </div>
                 <div class="mt-6 flex flex-col gap-2">
                     <label for="">Deskripsi</label>
@@ -29,49 +29,42 @@
                     <div class="mt-6 flex flex-col gap-2">
                         <label for="audio">Audio</label>
                         <input type="file" name="audio" class="w-full border px-4 py-[6px] rounded-md bg-transparent"
-                            accept="audio/mpeg, video/mp4" onchange="previewAudio(event)">
+                        accept="audio/mpeg, audio/wav, video/mp4" onchange="previewAudio(event)">
                     </div>
                     <div class="mt-6 flex flex-col gap-2">
                         <label>Pratinjau Audio</label>
                         <div class="relative w-fit">
-                            <audio id="audio-preview" controls class="{{ $data->audio ? '' : 'hidden' }} p-0">
+                            <audio id="audio-preview" controls class="{{ $data->audio ? '' : 'hidden' }}">
                                 <source src="{{ $data->audio ? asset('storage/' . $data->audio) : '' }}" type="audio/mpeg">
                             </audio>
-                            <button type="button" id="delete-audio-button"
-                                class="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 bg-red-500 text-white rounded-full flex justify-center items-center w-6 h-6 {{ $data->audio ? '' : 'hidden' }}"
-                                onclick="deleteAudio()">x</button>
+                            <span id="no-audio" class="{{ $data->audio ? 'hidden' : 'text-red-500' }}">Belum ada Audio</span>
+                            <button type="button" id="delete-audio-button" class="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 bg-red-500 text-white rounded-full flex justify-center items-center w-6 h-6 {{ $data->audio ? '' : 'hidden' }}" onclick="deleteAudio()">x</button>
                         </div>
-                        <span id="no-audio" class="{{ $data->audio ? 'hidden' : 'text-red-500' }}">Belum ada Audio</span>
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div class="mt-6 flex flex-col gap-2">
-                        <label for="">Foto</label>
-                        <input type="file" name="photo[]" class="w-full border px-4 py-2 rounded-md bg-transparent"
-                            onchange="previewImages(event)" accept=".jpg, .jpeg, .png" multiple>
+                        <label for="photo">Foto</label>
+                        <input type="file" name="photo" class="w-full border px-4 py-2 rounded-md bg-transparent" onchange="previewImages(event)" accept=".jpg, .jpeg, .png">
                     </div>
-                    <div class="mt-6 flex flex-col gap-2 ">
+                    <div class="mt-6 flex flex-col gap-2">
                         <label>Pratinjau Foto</label>
-                        <div id="photo-preview" class="flex flex-wrap gap-4">
-                            @foreach ($photos as $photo)
-                                <div class="relative w-1/3 existing-photo" data-photo-id="{{ $photo->id }}">
-                                    <img src="{{ asset('storage/' . $photo->photo) }}" class="w-full border-none" />
-                                    <button type="button"
-                                        class="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 bg-red-500 text-white rounded-full flex justify-center items-center w-6 h-6"
-                                        onclick="deleteImage(this, true)">x</button>
-                                    <input type="hidden" name="existing_photos[]" value="{{ $photo->photo }}">
-                                </div>
-                            @endforeach
+                        <div class="relative w-1/3">
+                            <div id="photo-preview" class="flex flex-wrap gap-2">
+                                @if ($data->photo)
+                                    <img src="{{ asset('storage/' . $data->photo) }}" class="w-full object-cover rounded-md" alt="Foto">
+                                @endif
+                            </div>
+                            <span id="no-photo-text" class="{{ $data->photo ? 'hidden' : 'text-red-500' }}">Belum ada foto</span>
+                            <button type="button" id="delete-photo-button" class="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 bg-red-500 text-white rounded-full flex justify-center items-center w-6 h-6 {{ $data->photo ? '' : 'hidden' }}" onclick="deletePhoto()">x</button>
                         </div>
-                        <span id="no-photo-text" class="{{ $photos->isEmpty() ? 'text-red-500' : 'hidden' }}">Belum ada
-                            foto</span>
                     </div>
                 </div>
+                <input type="hidden" name="delete_audio" id="deleted-audio">
+                <input type="hidden" name="delete_photo" id="deleted-photo">
                 <div class="mt-6 flex flex-col gap-2 justify-end">
-                    <button type="submit" class="rounded-md bg-primary text-white py-2 text-lg">Update SubMateri</button>
+                    <button type="submit" class="rounded-md bg-primary text-white py-2 text-lg">Update Example</button>
                 </div>
-                <input type="hidden" name="deleted_photos" id="deleted-photos">
-                <input type="hidden" name="deleted_audio" id="deleted-audio">
             </form>
         </div>
     </div>
@@ -85,74 +78,54 @@
                 console.error(error);
             });
 
-        let existingPhotoIds = [];
+        function previewAudio(event) {
+            const audioPreview = document.getElementById('audio-preview');
+            const noAudioText = document.getElementById('no-audio');
+            const deleteAudioButton = document.getElementById('delete-audio-button');
 
-        function previewImages(event) {
             const files = event.target.files;
-            const previewContainer = document.getElementById('photo-preview');
-            const noPhotoText = document.getElementById('no-photo-text');
-            noPhotoText.classList.add('hidden');
-
-            for (const file of files) {
+            if (files.length > 0) {
+                const file = files[0];
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    const divElement = document.createElement('div');
-                    divElement.className = 'relative w-1/3';
-
-                    const imgElement = document.createElement('img');
-                    imgElement.src = e.target.result;
-                    imgElement.className = 'w-full border-none';
-
-                    const deleteButton = document.createElement('button');
-                    deleteButton.type = 'button';
-                    deleteButton.className =
-                        'absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 bg-red-500 text-white rounded-full flex justify-center items-center w-6 h-6';
-                    deleteButton.innerText = 'x';
-                    deleteButton.onclick = function() {
-                        divElement.remove();
-                        updatePhotoPreview();
-                    };
-
-                    divElement.appendChild(imgElement);
-                    divElement.appendChild(deleteButton);
-                    previewContainer.appendChild(divElement);
+                    audioPreview.src = e.target.result;
+                    audioPreview.classList.remove('hidden');
+                    noAudioText.style.display = 'none';
+                    deleteAudioButton.classList.remove('hidden');
                 };
                 reader.readAsDataURL(file);
+            } else {
+                audioPreview.src = '';
+                audioPreview.classList.add('hidden');
+                noAudioText.style.display = 'block';
+                deleteAudioButton.classList.add('hidden');
             }
         }
 
-        function deleteImage(button, isExisting = false) {
-            const parent = button.parentElement;
-            if (isExisting) {
-                const photoId = parent.getAttribute('data-photo-id');
-                existingPhotoIds.push(photoId);
-            }
-            parent.remove();
-            updatePhotoPreview();
-        }
-
-        function updatePhotoPreview() {
-            const previewContainer = document.getElementById('photo-preview');
+        function previewImages(event) {
+            const photoPreview = document.getElementById('photo-preview');
             const noPhotoText = document.getElementById('no-photo-text');
-            if (previewContainer.children.length === 0) {
-                noPhotoText.classList.remove('hidden');
-            } else {
-                noPhotoText.classList.add('hidden');
-            }
-        }
+            const deletePhotoButton = document.getElementById('delete-photo-button');
+            const files = event.target.files;
+            photoPreview.innerHTML = '';
 
-        function previewAudio(event) {
-            const audio = document.getElementById('audio-preview');
-            const file = event.target.files[0];
-            if (file) {
-                const url = URL.createObjectURL(file);
-                audio.src = url;
-                audio.classList.remove('hidden');
-                document.getElementById('no-audio').style.display = 'none';
-                document.getElementById('delete-audio-button').classList.remove('hidden');
+            if (files.length > 0) {
+                noPhotoText.style.display = 'none';
+                deletePhotoButton.classList.remove('hidden');
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.classList.add('w-full', 'object-cover', 'rounded-md');
+                        photoPreview.appendChild(img);
+                    };
+                    reader.readAsDataURL(file);
+                }
             } else {
-                audio.classList.add('hidden');
-                document.getElementById('delete-audio-button').classList.add('hidden');
+                noPhotoText.style.display = 'block';
+                deletePhotoButton.classList.add('hidden');
             }
         }
 
@@ -166,9 +139,33 @@
             document.getElementById('deleted-audio').value = 'true';
         }
 
-        document.querySelector('form').addEventListener('submit', function(event) {
-            const deletedPhotosInput = document.getElementById('deleted-photos');
-            deletedPhotosInput.value = JSON.stringify(existingPhotoIds);
+        function deletePhoto() {
+            const photoPreview = document.getElementById('photo-preview');
+            const noPhotoText = document.getElementById('no-photo-text');
+            const deleteButton = document.getElementById('delete-photo-button');
+            photoPreview.innerHTML = '';
+            noPhotoText.style.display = 'block';
+            deleteButton.classList.add('hidden');
+            document.getElementById('deleted-photo').value = 'true';
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const audioPreview = document.getElementById('audio-preview');
+            const noAudioText = document.getElementById('no-audio');
+            const deleteAudioButton = document.getElementById('delete-audio-button');
+            if (audioPreview.src) {
+                audioPreview.classList.remove('hidden');
+                noAudioText.style.display = 'none';
+                deleteAudioButton.classList.remove('hidden');
+            }
+
+            const photoPreview = document.getElementById('photo-preview');
+            const noPhotoText = document.getElementById('no-photo-text');
+            const deletePhotoButton = document.getElementById('delete-photo-button');
+            if (photoPreview.querySelector('img')) {
+                noPhotoText.style.display = 'none';
+                deletePhotoButton.classList.remove('hidden');
+            }
         });
     </script>
 @endpush
